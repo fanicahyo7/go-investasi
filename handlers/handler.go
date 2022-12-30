@@ -18,9 +18,7 @@ func NewInvestmentHandler(investasiService service.InvestasiService) *investasiH
 	return &investasiHandler{investasiService}
 }
 
-// CalculateInvestment is a handler function for calculating investment
 func PerhitunganInvestasi(c *fiber.Ctx) error {
-	//parse request body
 	var request model.PerhitunganInvetasiRequest
 	if err := c.BodyParser(&request); err != nil {
 		return c.Status(http.StatusBadGateway).JSON(fiber.Map{
@@ -30,7 +28,6 @@ func PerhitunganInvestasi(c *fiber.Ctx) error {
 		})
 	}
 
-	//calculate investment
 	response, err := service.PerhitunganInvestasi(request)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
@@ -132,5 +129,18 @@ func (h *investasiHandler) SaveTransaction(c *fiber.Ctx) error {
 		"message": "Success save data",
 		"status":  http.StatusOK,
 		"data":    investasiOutput,
+	})
+}
+
+func (h *investasiHandler) GetInvestasiData(c *fiber.Ctx) error {
+	investmentData, err := h.investasiService.GetInvestasiData()
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(fiber.Map{
+		"status":  200,
+		"message": "Success fetching investment data",
+		"data":    investmentData,
 	})
 }

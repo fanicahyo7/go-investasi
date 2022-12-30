@@ -13,6 +13,7 @@ type InvestasiRepository interface {
 	CheckIfEmailExists(email string) (bool, error)
 	GetLastTransactionNumber() (string, error)
 	GetGenerateTransactionNumber(prefix string, lastTransactionNumber string) string
+	GetAllInvestment() ([]model.InvestasiOutputAll, error)
 }
 
 type investmentRepository struct {
@@ -61,18 +62,14 @@ func (r *investmentRepository) CheckIfEmailExists(email string) (bool, error) {
 	return false, nil
 }
 
-// GenerateTransactionNumber generates a transaction number with the given prefix
 func GenerateTransactionNumber(prefix string, lastTransactionNumber string) string {
-	//extract the last transaction number from the given string
 	lastTransactionNumberInt, err := strconv.Atoi(lastTransactionNumber[len(prefix):])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//increment the last transaction number by 1
 	lastTransactionNumberInt++
 
-	//return the new transaction number with the same prefix and the incremented number
 	return fmt.Sprintf("%s%06d", prefix, lastTransactionNumberInt)
 }
 
@@ -89,17 +86,47 @@ func (r *investmentRepository) GetLastTransactionNumber() (string, error) {
 	return transactionNumber, nil
 }
 
-// GenerateTransactionNumber generates a transaction number with the given prefix
 func (r *investmentRepository) GetGenerateTransactionNumber(prefix string, lastTransactionNumber string) string {
-	//extract the last transaction number from the given string
 	lastTransactionNumberInt, err := strconv.Atoi(lastTransactionNumber[len(prefix):])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//increment the last transaction number by 1
 	lastTransactionNumberInt++
 
-	//return the new transaction number with the same prefix and the incremented number
 	return fmt.Sprintf("%s%06d", prefix, lastTransactionNumberInt)
+}
+
+func (r *investmentRepository) GetAllInvestment() ([]model.InvestasiOutputAll, error) {
+	var result []model.InvestasiOutputAll
+	query := `SELECT ID,tanggal_transaksi,no_transaksi ,nama,jenis_kelamin,usia,email,perokok,nominal,lama_investasi,periode_pembayaran,metode_pembayaran,total_bayar FROM investasi`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var investasi model.InvestasiOutputAll
+		err := rows.Scan(
+			&investasi.ID,
+			&investasi.TglTransaksi,
+			&investasi.NoTransaction,
+			&investasi.Nama,
+			&investasi.JenisKelamin,
+			&investasi.Usia,
+			&investasi.Email,
+			&investasi.Perokok,
+			&investasi.Nominal,
+			&investasi.LamaInvestasi,
+			&investasi.PeriodeBayar,
+			&investasi.MetodeBayar,
+			&investasi.TotalBayar,
+		)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, investasi)
+	}
+	return result, nil
 }

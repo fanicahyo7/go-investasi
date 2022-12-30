@@ -13,6 +13,7 @@ type InvestasiService interface {
 	SaveTransaction(transaction model.Transaction) error
 	CalculateTotalPayment(nominal int, investmentPeriod int, paymentPeriod string) int
 	GenerateTransactionNumber(prefix string, lastTransactionNumber string) string
+	GetInvestasiData() ([]model.InvestasiOutputAll, error)
 }
 
 type investasiService struct {
@@ -33,7 +34,6 @@ func PerhitunganInvestasi(request model.PerhitunganInvetasiRequest) (map[int]map
 		return nil, errors.New("masukkan perokok dengan benar (ya/tidak)")
 	}
 
-	//initialize base investment rate
 	persenTambahanInves := 0.0
 	if strings.ToLower(request.JenisKelamin) == "pria" {
 		if strings.ToLower(request.Perokok) == "ya" {
@@ -49,17 +49,14 @@ func PerhitunganInvestasi(request model.PerhitunganInvetasiRequest) (map[int]map
 		}
 	}
 
-	//add additional investment rate based on age
 	if request.Usia >= 0 && request.Usia <= 30 {
 		persenTambahanInves += 0.01
 	} else if request.Usia >= 31 && request.Usia <= 50 {
 		persenTambahanInves += 0.005
 	}
 
-	//initialize map to store investment data for each year
 	investasiData := make(map[int]map[string]float64)
 
-	//calculate investment data for each year
 	for i := 1; i <= request.LamaInvestasi; i++ {
 		investasiData[i] = make(map[string]float64)
 		investasiData[i]["awal"] = request.Nominal
@@ -75,12 +72,10 @@ func (s *investasiService) SaveTransaction(transaction model.Transaction) error 
 	return s.repo.SaveTransaction(transaction)
 }
 
-// CheckIfEmailExists checks if the given email already exists in the database
 func (s *investasiService) CheckIfEmailExists(email string) (bool, error) {
 	return s.repo.CheckIfEmailExists(email)
 }
 
-// GetLastTransactionNumber gets the last transaction number from the database
 func (s *investasiService) GetLastTransactionNumber() (string, error) {
 	return s.repo.GetLastTransactionNumber()
 }
@@ -95,4 +90,13 @@ func (s *investasiService) CalculateTotalPayment(nominal int, investmentPeriod i
 	}
 
 	return nominal / 12 * investmentPeriod
+}
+
+func (s *investasiService) GetInvestasiData() ([]model.InvestasiOutputAll, error) {
+	investmentData, err := s.repo.GetAllInvestment()
+	if err != nil {
+		return nil, err
+	}
+
+	return investmentData, nil
 }
