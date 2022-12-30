@@ -79,10 +79,11 @@ func GenerateTransactionNumber(prefix string, lastTransactionNumber string) stri
 func (r *investmentRepository) GetLastTransactionNumber() (string, error) {
 	var transactionNumber string
 	err := r.db.QueryRow("SELECT no_transaksi FROM investasi ORDER BY id DESC LIMIT 1").Scan(&transactionNumber)
-	// if err == sql.ErrNoRows {
-	// 	return "TRX000001", nil
-	// }
+	if err == sql.ErrNoRows {
+		return "TRX000000", nil
+	}
 	if err != nil {
+		println(err.Error())
 		return "", err
 	}
 	return transactionNumber, nil
