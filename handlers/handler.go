@@ -78,9 +78,9 @@ func (h *investasiHandler) SaveTransaction(c *fiber.Ctx) error {
 		})
 
 	}
-	transactionNumber = h.investasiService.GenerateTransactionNumber("TRX", transactionNumber)
+	transactionNumber = service.GenerateTransactionNumber("TRX", transactionNumber)
 
-	totalBayar := h.investasiService.CalculateTotalPayment(input.Nominal, input.LamaInvestasi, input.MetodeBayar)
+	totalBayar := service.CalculateTotalPayment(input.Nominal, input.LamaInvestasi, input.MetodeBayar)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to calculate total payment",
@@ -112,7 +112,7 @@ func (h *investasiHandler) SaveTransaction(c *fiber.Ctx) error {
 
 	}
 
-	investasiOutput := &model.InvestasiOutput{
+	investasiOutput := model.InvestasiOutput{
 		NoTransaction: investasi.NoTransaction,
 		TglTransaksi:  time.Now().Format("2006-01-02 15:04:05"),
 		Nama:          investasi.Nama,

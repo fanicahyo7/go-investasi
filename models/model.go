@@ -66,4 +66,13 @@ type InvestasiOutputAll struct {
 	PeriodeBayar  string `json:"periode_pembayaran"`
 	MetodeBayar   string `json:"metode_bayar"`
 	TotalBayar    string `json:"total_bayar"`
+	Status        string `json:"status"`
+}
+
+type EditDataInput struct {
+	NoTransaction string `json:"no_transaction"`
+	Status        string `json:"status"`
+	Supervisor    string `json:"supervisor"`
+	Nama          string `json:"nama"`
+	Usia          int    `json:"usia"`
 }

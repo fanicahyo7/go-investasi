@@ -4,15 +4,12 @@ import (
 	"database/sql"
 	model "fanitest/models"
 	"fmt"
-	"log"
-	"strconv"
 )
 
 type InvestasiRepository interface {
 	SaveTransaction(transaction model.Transaction) error
 	CheckIfEmailExists(email string) (bool, error)
 	GetLastTransactionNumber() (string, error)
-	GetGenerateTransactionNumber(prefix string, lastTransactionNumber string) string
 	GetAllInvestment() ([]model.InvestasiOutputAll, error)
 }
 
@@ -62,17 +59,6 @@ func (r *investmentRepository) CheckIfEmailExists(email string) (bool, error) {
 	return false, nil
 }
 
-func GenerateTransactionNumber(prefix string, lastTransactionNumber string) string {
-	lastTransactionNumberInt, err := strconv.Atoi(lastTransactionNumber[len(prefix):])
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	lastTransactionNumberInt++
-
-	return fmt.Sprintf("%s%06d", prefix, lastTransactionNumberInt)
-}
-
 func (r *investmentRepository) GetLastTransactionNumber() (string, error) {
 	var transactionNumber string
 	err := r.db.QueryRow("SELECT no_transaksi FROM investasi ORDER BY id DESC LIMIT 1").Scan(&transactionNumber)
@@ -84,17 +70,6 @@ func (r *investmentRepository) GetLastTransactionNumber() (string, error) {
 		return "", err
 	}
 	return transactionNumber, nil
-}
-
-func (r *investmentRepository) GetGenerateTransactionNumber(prefix string, lastTransactionNumber string) string {
-	lastTransactionNumberInt, err := strconv.Atoi(lastTransactionNumber[len(prefix):])
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	lastTransactionNumberInt++
-
-	return fmt.Sprintf("%s%06d", prefix, lastTransactionNumberInt)
 }
 
 func (r *investmentRepository) GetAllInvestment() ([]model.InvestasiOutputAll, error) {
@@ -129,4 +104,28 @@ func (r *investmentRepository) GetAllInvestment() ([]model.InvestasiOutputAll, e
 		result = append(result, investasi)
 	}
 	return result, nil
+}
+
+func (r *investmentRepository) GetInvestmentByTransactionNumber(transactionNumber string) (model.InvestasiOutputAll, error) {
+	var investasi model.InvestasiOutputAll
+	err := r.db.QueryRow("SELECT * FROM investasi WHERE no_transaksi=?", transactionNumber).Scan(
+		&investasi.ID,
+		&investasi.TglTransaksi,
+		&investasi.NoTransaction,
+		&investasi.Nama,
+		&investasi.JenisKelamin,
+		&investasi.Usia,
+		&investasi.Email,
+		&investasi.Perokok,
+		&investasi.Nominal,
+		&investasi.LamaInvestasi,
+		&investasi.PeriodeBayar,
+		&investasi.MetodeBayar,
+		&investasi.TotalBayar,
+		&investasi.Status,
+	)
+	if err != nil {
+		return investasi, err
+	}
+	return investasi, nil
 }

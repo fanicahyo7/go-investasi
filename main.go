@@ -35,7 +35,7 @@ func main() {
 
 	app.Post("/soal-satu", handlers.PerhitunganInvestasi)
 	app.Post("/soal-dua", investmentHandler.SaveTransaction)
-	app.Post("soal-tiga", investmentHandler.GetInvestasiData)
+	app.Get("/soal-tiga", investmentHandler.GetInvestasiData)
 
 	log.Fatal(app.Listen(":3000"))
 }

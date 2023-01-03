@@ -4,6 +4,9 @@ import (
 	"errors"
 	model "fanitest/models"
 	"fanitest/repository"
+	"fmt"
+	"log"
+	"strconv"
 	"strings"
 )
 
@@ -11,8 +14,6 @@ type InvestasiService interface {
 	CheckIfEmailExists(email string) (bool, error)
 	GetLastTransactionNumber() (string, error)
 	SaveTransaction(transaction model.Transaction) error
-	CalculateTotalPayment(nominal int, investmentPeriod int, paymentPeriod string) int
-	GenerateTransactionNumber(prefix string, lastTransactionNumber string) string
 	GetInvestasiData() ([]model.InvestasiOutputAll, error)
 }
 
@@ -80,11 +81,18 @@ func (s *investasiService) GetLastTransactionNumber() (string, error) {
 	return s.repo.GetLastTransactionNumber()
 }
 
-func (s *investasiService) GenerateTransactionNumber(prefix string, lastTransactionNumber string) string {
-	return s.repo.GetGenerateTransactionNumber(prefix, lastTransactionNumber)
+func GenerateTransactionNumber(prefix string, lastTransactionNumber string) string {
+	lastTransactionNumberInt, err := strconv.Atoi(lastTransactionNumber[len(prefix):])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lastTransactionNumberInt++
+
+	return fmt.Sprintf("%s%06d", prefix, lastTransactionNumberInt)
 }
 
-func (s *investasiService) CalculateTotalPayment(nominal int, investmentPeriod int, paymentPeriod string) int {
+func CalculateTotalPayment(nominal int, investmentPeriod int, paymentPeriod string) int {
 	if paymentPeriod == "tahunan" {
 		investmentPeriod--
 	}
